@@ -1,8 +1,8 @@
-mod hardware;
-mod instructions;
-
-use hardware::{LC3, Register};
-use instructions::*;
+use lc_3_virtual_machine::{
+    hardware::{LC3, Register},
+    isa::ConditionFlag,
+    virtual_machine::run,
+};
 fn main() {
     // Handle CLI arguments (equivalent to argc/argv check)
     let args: Vec<String> = std::env::args().collect();
@@ -23,38 +23,7 @@ fn main() {
         }
     }
     
-    // Main execution loop
-    let mut running = true;
-    while running {
-        // Read instruction and increment PC
-        let pc = virtual_machine.registers[Register::RPc as usize];
-        let instr = virtual_machine.memory[pc as usize];
-        virtual_machine.registers[Register::RPc as usize] += 1;
+    // Run the virtual machine
+    run(&mut virtual_machine);
 
-        // Get the top 4 bits for the opcode
-        let operation = instr >> 12;
-        
-        // Convert the bits into our Operation enum
-    match operation {
-        x if x == Operation::ADD  as u16 => instructions::op_add(&mut virtual_machine, instr),
-        x if x == Operation::AND  as u16 => instructions::op_and(&mut virtual_machine, instr),
-        x if x == Operation::NOT  as u16 => instructions::op_not(&mut virtual_machine, instr),
-        x if x == Operation::BR   as u16 => instructions::op_br(&mut virtual_machine, instr),
-        x if x == Operation::JMP  as u16 => instructions::op_jmp(&mut virtual_machine, instr),
-        x if x == Operation::JSR  as u16 => instructions::op_jsr(&mut virtual_machine, instr),
-        x if x == Operation::LD   as u16 => instructions::op_ld(&mut virtual_machine, instr),
-        x if x == Operation::LDI  as u16 => instructions::op_ldi(&mut virtual_machine, instr),
-        x if x == Operation::LDR  as u16 => instructions::op_ldr(&mut virtual_machine, instr),
-        x if x == Operation::LEA  as u16 => instructions::op_lea(&mut virtual_machine, instr),
-        x if x == Operation::ST   as u16 => instructions::op_st(&mut virtual_machine, instr),
-        x if x == Operation::STI  as u16 => instructions::op_sti(&mut virtual_machine, instr),
-        x if x == Operation::STR  as u16 => instructions::op_str(&mut virtual_machine, instr),
-        x if x == Operation::TRAP as u16 => instructions::op_trap(&mut virtual_machine, instr, &mut running),
-    _ => {
-        println!("operation doesnt exist: {:#X}", operation);
-        running = false;
-    }
-}
-    }
-    
 }
