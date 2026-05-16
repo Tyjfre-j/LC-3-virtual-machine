@@ -1,3 +1,5 @@
+use std::fs::File;
+use std::io::{self, Read};
 /// 64K memory locations, each storing a 16-bit value.
 pub const MEMORY_SIZE: usize = 65536;
 
@@ -44,5 +46,23 @@ impl LC3 {
             memory: [0; MEMORY_SIZE],
             registers: [0; Register::RCount as usize],
         }
+    }
+
+    /// Reads a binary image file into the LC-3 memory
+    pub fn read_image(&mut self, path: &str) -> Result<(), io::Error> {
+        let mut file = File::open(path)?;
+        let mut buffer = Vec::new();
+        file.read_to_end(&mut buffer)?;
+
+        let origin = u16::from_be_bytes([buffer[0], buffer[1]]) as usize;
+
+        let mut addr = origin;
+        let mut i = 2;
+        while i + 1 < buffer.len() {
+            self.memory[addr] = u16::from_be_bytes([buffer[i], buffer[i + 1]]);
+            addr += 1;
+            i += 2;
+        }
+        Ok(())
     }
 }
