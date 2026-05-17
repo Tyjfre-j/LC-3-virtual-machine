@@ -1,14 +1,18 @@
 use crate::{
     hardware::{LC3, Register},
-    isa::{ops, trap, Operation},
+    isa::{Operation, ops, trap},
+    terminal,
 };
 
 pub fn run(vm: &mut LC3) {
     let mut running = true;
 
     while running {
+        if terminal::interrupted() {
+            break;
+        }
         let pc = vm.registers[Register::RPc as usize];
-        let instr = vm.memory[pc as usize];
+        let instr = vm.mem_read(pc);
         vm.registers[Register::RPc as usize] = pc.wrapping_add(1);
 
         running = dispatch(vm, instr);

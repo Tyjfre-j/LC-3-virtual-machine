@@ -87,7 +87,7 @@ pub fn op_ld(vm: &mut LC3, instr: u16) {
     let offset = sign_extend(instr & 0x1FF, 9);
     // the effective address is PC + offset
     let addr = vm.registers[Register::RPc as usize].wrapping_add(offset);
-    vm.registers[dr] = vm.memory[addr as usize];
+    vm.registers[dr] = vm.mem_read(addr);
     update_flags(vm, dr);
 }
 
@@ -99,8 +99,8 @@ pub fn op_ldi(vm: &mut LC3, instr: u16) {
     // the effective address is PC + offset, but we need to do an extra memory read to get the final address
     let ptr = vm.registers[Register::RPc as usize].wrapping_add(offset);
     // first read: get the real address from memory, then read the value at that address
-    let addr = vm.memory[ptr as usize]; // first read: get the real address
-    vm.registers[dr] = vm.memory[addr as usize]; // second read: get the value
+    let addr = vm.mem_read(ptr); // first read: get the real address
+    vm.registers[dr] = vm.mem_read(addr); // second read: get the value
     update_flags(vm, dr);
 }
 
@@ -113,7 +113,7 @@ pub fn op_ldr(vm: &mut LC3, instr: u16) {
     let offset = sign_extend(instr & 0x3F, 6);
     // the effective address is BaseR + offset
     let addr = vm.registers[base_r].wrapping_add(offset);
-    vm.registers[dr] = vm.memory[addr as usize];
+    vm.registers[dr] = vm.mem_read(addr);
     update_flags(vm, dr);
 }
 
@@ -134,7 +134,7 @@ pub fn op_st(vm: &mut LC3, instr: u16) {
     let offset = sign_extend(instr & 0x1FF, 9);
     // the effective address is PC + offset
     let addr = vm.registers[Register::RPc as usize].wrapping_add(offset);
-    vm.memory[addr as usize] = vm.registers[sr];
+    vm.mem_write(addr, vm.registers[sr]);
 }
 
 pub fn op_sti(vm: &mut LC3, instr: u16) {
@@ -145,8 +145,8 @@ pub fn op_sti(vm: &mut LC3, instr: u16) {
     // the effective address is PC + offset but we need to do an extra memory read to get the final address
     let ptr = vm.registers[Register::RPc as usize].wrapping_add(offset);
     // first read: get the real address from memory, then write the value to that address
-    let addr = vm.memory[ptr as usize];
-    vm.memory[addr as usize] = vm.registers[sr];
+    let addr = vm.mem_read(ptr);
+    vm.mem_write(addr, vm.registers[sr]);
 }
 
 pub fn op_str(vm: &mut LC3, instr: u16) {
@@ -158,6 +158,5 @@ pub fn op_str(vm: &mut LC3, instr: u16) {
     let offset = sign_extend(instr & 0x3F, 6);
     // the effective address is BaseR + offset
     let addr = vm.registers[base_r].wrapping_add(offset);
-    vm.memory[addr as usize] = vm.registers[sr];
+    vm.mem_write(addr, vm.registers[sr]);
 }
-

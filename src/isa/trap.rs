@@ -1,6 +1,7 @@
-use std::io::{Read, Write};
+use std::io::Write;
 
 use crate::hardware::{LC3, Register};
+use crate::terminal;
 
 use super::{types::TrapCode, utils::update_flags};
 
@@ -23,46 +24,44 @@ pub fn op_trap(vm: &mut LC3, instr: u16) -> bool {
 }
 
 fn trap_getc(vm: &mut LC3) {
-    let mut buf = [0u8; 1];
-    std::io::stdin().read_exact(&mut buf).unwrap();
-    vm.registers[Register::R0 as usize] = buf[0] as u16;
+    let c = terminal::get_char() as u16;
+    vm.registers[Register::R0 as usize] = c;
     update_flags(vm, Register::R0 as usize);
 }
 
 fn trap_out(vm: &mut LC3) {
     let c = vm.registers[Register::R0 as usize] as u8;
     print!("{}", c as char);
-    std::io::stdout().flush().unwrap();
+    let _ = std::io::stdout().flush();
 }
 
 fn trap_puts(vm: &mut LC3) {
-    let mut addr = vm.registers[Register::R0 as usize] as usize;
+    let mut addr = vm.registers[Register::R0 as usize];
     loop {
-        let c = vm.memory[addr];
+        let c = vm.mem_read(addr);
         if c == 0 {
             break;
         }
         print!("{}", c as u8 as char);
-        addr += 1;
+        addr = addr.wrapping_add(1);
     }
-    std::io::stdout().flush().unwrap();
+    let _ = std::io::stdout().flush();
 }
 
 fn trap_in(vm: &mut LC3) {
     print!("Enter a character: ");
-    std::io::stdout().flush().unwrap();
-    let mut buf = [0u8; 1];
-    std::io::stdin().read_exact(&mut buf).unwrap();
-    print!("{}", buf[0] as char);
-    std::io::stdout().flush().unwrap();
-    vm.registers[Register::R0 as usize] = buf[0] as u16;
+    let _ = std::io::stdout().flush();
+    let c = terminal::get_char();
+    print!("{}", c as char);
+    let _ = std::io::stdout().flush();
+    vm.registers[Register::R0 as usize] = c as u16;
     update_flags(vm, Register::R0 as usize);
 }
 
 fn trap_putsp(vm: &mut LC3) {
-    let mut addr = vm.registers[Register::R0 as usize] as usize;
+    let mut addr = vm.registers[Register::R0 as usize];
     loop {
-        let word = vm.memory[addr];
+        let word = vm.mem_read(addr);
         if word == 0 {
             break;
         }
@@ -72,8 +71,7 @@ fn trap_putsp(vm: &mut LC3) {
         if c2 != 0 {
             print!("{}", c2 as char);
         }
-        addr += 1;
+        addr = addr.wrapping_add(1);
     }
-    std::io::stdout().flush().unwrap();
+    let _ = std::io::stdout().flush();
 }
-

@@ -76,4 +76,3 @@ pub enum TrapCode {
     PutsP = 0x24, // output a byte string
     Halt = 0x25,  // halt the program
 }
-

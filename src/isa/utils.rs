@@ -19,4 +19,3 @@ pub fn update_flags(vm: &mut LC3, r: usize) {
         ConditionFlag::POS as u16
     };
 }
-
