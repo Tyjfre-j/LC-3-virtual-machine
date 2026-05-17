@@ -28,4 +28,4 @@ Or run the built exe directly:
 ## References
 
 - Tutorial: “Write your Own Virtual Machine” — Justin Meiners & Ryan Pendleton
-  - `https://www.jmeiners.com/lc3-vm`
+  - https://www.jmeiners.com/lc3-vm
